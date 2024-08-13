@@ -99,6 +99,7 @@ def manager_init() -> None:
     ("StockLongToyota", "0"),
     ("TorqueDeadzoneDeg", "0"),
     ("TorqueFriction", "1"),
+    ("TorqueLateralJerk", "0"),
     ("TorqueMaxLatAccel", "250"),
     ("ToyotaAutoLockBySpeed", "0"),
     ("ToyotaAutoUnlockByShifter", "0"),

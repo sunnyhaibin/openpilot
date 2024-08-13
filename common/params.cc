@@ -320,6 +320,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"TermsVersionSunnypilot", PERSISTENT},
     {"TorqueDeadzoneDeg", PERSISTENT | BACKUP},
     {"TorqueFriction", PERSISTENT | BACKUP},
+    {"TorqueLateralJerk", PERSISTENT | BACKUP},
     {"TorqueMaxLatAccel", PERSISTENT | BACKUP},
     {"TorquedOverride", PERSISTENT | BACKUP},
     {"ToyotaAutoLockBySpeed", PERSISTENT | BACKUP},

@@ -98,6 +98,12 @@ SunnypilotPanel::SunnypilotPanel(QWidget *parent) : QFrame(parent) {
       "../assets/offroad/icon_blank.png",
     },
     {
+      "TorqueLateralJerk",
+      tr("Lateral Jerk with Torque Lateral Control (Alpha)"),
+      tr("Utilizes limited lateral jerk control for improved steering response, leveraging stock torque lateral controller capabilities. Designed to mimic NNLC behavior without training models or data collection."),
+      "../assets/offroad/icon_blank.png",
+    },
+    {
       "LiveTorque",
       tr("Enable Self-Tune"),
       tr("Enables self-tune for Torque lateral control for platforms that do not use Torque lateral control by default."),
@@ -345,6 +351,17 @@ SunnypilotPanel::SunnypilotPanel(QWidget *parent) : QFrame(parent) {
     }
   });
 
+  connect(toggles["EnforceTorqueLateral"], &ToggleControlSP::toggleFlipped, [=](bool state) {
+    if (state) {
+      toggles["NNFF"]->setEnabled(false);
+      params.putBool("NNFF", false);
+      toggles["NNFF"]->refresh();
+    } else {
+      toggles["NNFF"]->setEnabled(true);
+      toggles["NNFF"]->refresh();
+    }
+  });
+
   // trigger updateToggles() when toggleFlipped
   for (const auto& updateToggleName : updateTogglesNames) {
     if (toggles.find(updateToggleName) != toggles.end()) {
@@ -577,7 +594,7 @@ void SunnypilotPanel::updateToggles() {
   }
 
   // toggle names to update when EnforceTorqueLateral is flipped
-  std::vector<std::string> torqueLateralGroup{"CustomTorqueLateral", "LiveTorque", "LiveTorqueRelaxed", "TorquedOverride"};
+  std::vector<std::string> torqueLateralGroup{"CustomTorqueLateral", "TorqueLateralJerk", "LiveTorque", "LiveTorqueRelaxed", "TorquedOverride"};
   for (const auto& torqueLateralToggle : torqueLateralGroup) {
     if (toggles.find(torqueLateralToggle) != toggles.end()) {
       if (nnff_toggle->isToggled()) {
