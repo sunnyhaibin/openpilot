@@ -119,6 +119,16 @@ SPVehiclesTogglesPanel::SPVehiclesTogglesPanel(VehiclePanel *parent) : ListWidge
   subaruManualParkingBrakeSng->setConfirmation(true, false);
   addItem(subaruManualParkingBrakeSng);
 
+  // Tesla
+  addItem(new LabelControlSP(tr("Tesla")));
+  auto teslaVirtualTorqueBlending = new ParamControlSP(
+    "TeslaVirtualTorqueBlending",
+    tr("Virtual Torque Blending (Beta)"),
+    tr("Experimental feature to allow influencing of the steering angle while ALC is active. Note: ALC/ACC will no longer disengage by applying force to the wheel."),
+    "../assets/offroad/icon_blank.png");
+  teslaVirtualTorqueBlending->setConfirmation(true, false);
+  addItem(teslaVirtualTorqueBlending);
+
   // Toyota/Lexus
   addItem(new LabelControlSP(tr("Toyota/Lexus")));
   stockLongToyota = new ParamControlSP(
