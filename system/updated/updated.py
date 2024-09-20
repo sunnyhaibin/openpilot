@@ -33,6 +33,7 @@ OVERLAY_INIT = Path(os.path.join(BASEDIR, ".overlay_init"))
 
 DAYS_NO_CONNECTIVITY_MAX = 14     # do not allow to engage after this many days
 DAYS_NO_CONNECTIVITY_PROMPT = 10  # send an offroad prompt after this many days
+params = Params()
 
 class UserRequest:
   NONE = 0
@@ -43,15 +44,18 @@ class WaitTimeHelper:
   def __init__(self):
     self.ready_event = threading.Event()
     self.user_request = UserRequest.NONE
+    self.params = Params()
     signal.signal(signal.SIGHUP, self.update_now)
     signal.signal(signal.SIGUSR1, self.check_now)
 
   def update_now(self, signum: int, frame) -> None:
     cloudlog.info("caught SIGHUP, attempting to downloading update")
+    self.params.put("UpdaterState", "Update request received... Wait...")
     self.user_request = UserRequest.FETCH
     self.ready_event.set()
 
   def check_now(self, signum: int, frame) -> None:
+    self.params.put("UpdaterState", "Initializing updater to start check...")
     cloudlog.info("caught SIGUSR1, checking for updates")
     self.user_request = UserRequest.CHECK
     self.ready_event.set()
@@ -119,6 +123,7 @@ def setup_git_options(cwd: str) -> None:
   ]
   for option, value in git_cfg:
     run(["git", "config", option, value], cwd)
+  params.put("UpdaterState", "Setting git options...")
 
 
 def dismount_overlay() -> None:
@@ -141,7 +146,6 @@ def init_overlay() -> None:
 
   cloudlog.info("preparing new safe staging area")
 
-  params = Params()
   params.put_bool("UpdateAvailable", False)
   set_consistent_flag(False)
   dismount_overlay()
@@ -186,6 +190,7 @@ def finalize_update() -> None:
   set_consistent_flag(False)
 
   # Copy the merged overlay view and set the update ready flag
+  params.put("UpdaterState", "Copying the update to the final location...")
   if os.path.exists(FINALIZED):
     shutil.rmtree(FINALIZED)
   shutil.copytree(OVERLAY_MERGED, FINALIZED, symlinks=True)
@@ -193,10 +198,13 @@ def finalize_update() -> None:
   run(["git", "reset", "--hard"], FINALIZED)
   run(["git", "submodule", "foreach", "--recursive", "git", "reset", "--hard"], FINALIZED)
 
+  params.put("UpdaterState", "Ensuring submodules are up-to-date...")
   cloudlog.info("Starting git cleanup in finalized update")
   t = time.monotonic()
   try:
+    params.put("UpdaterState", "Doing git cleanup... (this may take a while)")
     run(["git", "gc"], FINALIZED)
+    params.put("UpdaterState", "Still doing git cleanup...")
     run(["git", "lfs", "prune"], FINALIZED)
     cloudlog.event("Done git cleanup", duration=time.monotonic() - t)
   except subprocess.CalledProcessError:
@@ -204,6 +212,7 @@ def finalize_update() -> None:
 
   set_consistent_flag(True)
   cloudlog.info("done finalizing overlay")
+  params.put("UpdaterState", "Finalizing update...")
 
 
 def handle_agnos_update() -> None:
@@ -351,6 +360,7 @@ class Updater:
       self._has_internet = False
 
     setup_git_options(OVERLAY_MERGED)
+    params.put("UpdaterState", "Discovering branches...")
     output = run(["git", "ls-remote", "--heads"], OVERLAY_MERGED)
 
     self.branches = defaultdict(lambda: None)
@@ -360,19 +370,23 @@ class Updater:
       if x is not None and x.group('branch_name') not in excluded_branches:
         self.branches[x.group('branch_name')] = x.group('commit_sha')
 
+    params.put("UpdaterState", "Checking current branch...")
     cur_branch = self.get_branch(OVERLAY_MERGED)
+    params.put("UpdaterState", "Checking current commit...")
     cur_commit = self.get_commit_hash(OVERLAY_MERGED)
     new_branch = self.target_branch
     new_commit = self.branches[new_branch]
     if (cur_branch, cur_commit) != (new_branch, new_commit):
-      cloudlog.info(f"update available, {cur_branch} ({str(cur_commit)[:7]}) -> {new_branch} ({str(new_commit)[:7]})")
+      upd_msg = f"update available, {cur_branch} ({str(cur_commit)[:7]}) -> {new_branch} ({str(new_commit)[:7]})"
+      params.put("UpdaterState", upd_msg)
+      cloudlog.info(upd_msg)
     else:
       cloudlog.info(f"up to date on {cur_branch} ({str(cur_commit)[:7]})")
 
   def fetch_update(self) -> None:
     cloudlog.info("attempting git fetch inside staging overlay")
 
-    self.params.put("UpdaterState", "downloading...")
+    self.params.put("UpdaterState", "Downloading... Please, wait.")
 
     # TODO: cleanly interrupt this and invalidate old update
     set_consistent_flag(False)
@@ -382,9 +396,13 @@ class Updater:
 
     branch = self.target_branch
     git_fetch_output = run(["git", "fetch", "origin", branch], OVERLAY_MERGED)
-    cloudlog.info("git fetch success: %s", git_fetch_output)
+    upd_msg = f"git fetch success: {git_fetch_output}"
+    self.params.put("UpdaterState", upd_msg)
+    cloudlog.info(upd_msg)
 
-    cloudlog.info("git reset in progress")
+    upd_msg = "git reset in progress"
+    self.params.put("UpdaterState", upd_msg)
+    cloudlog.info(upd_msg)
     cmds = [
       ["git", "checkout", "--force", "--no-recurse-submodules", "-B", branch, "FETCH_HEAD"],
       ["git", "reset", "--hard"],
@@ -394,21 +412,21 @@ class Updater:
       ["git", "submodule", "foreach", "--recursive", "git", "reset", "--hard"],
     ]
     r = [run(cmd, OVERLAY_MERGED) for cmd in cmds]
-    cloudlog.info("git reset success: %s", '\n'.join(r))
+    self.params.put("UpdaterState", "git reset success...")
+    cloudlog.info(f"git reset success: %s", '\n'.join(r))
 
     # TODO: show agnos download progress
     if AGNOS:
+      self.params.put("UpdaterState", "Checking AGNOS update...")
       handle_agnos_update()
 
     # Create the finalized, ready-to-swap update
-    self.params.put("UpdaterState", "finalizing update...")
+    self.params.put("UpdaterState", "Finalizing update...")
     finalize_update()
     cloudlog.info("finalize success!")
 
 
 def main() -> None:
-  params = Params()
-
   if params.get_bool("DisableUpdates"):
     cloudlog.warning("updates are disabled by the DisableUpdates param")
     exit(0)
