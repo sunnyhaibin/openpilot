@@ -200,6 +200,13 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
     {"UpdaterLastFetchTime", PERSISTENT},
     {"Version", PERSISTENT},
+
+    // sunnypilot params
+    {"Mads", PERSISTENT},
+    {"MadsMainCruiseAllowed", PERSISTENT},
+    {"MadsPauseLateralOnBrake", PERSISTENT},
+    {"MadsUnifiedEngagementMode", PERSISTENT},
+    {"HyundaiLongitudinalMainCruiseToggleable", PERSISTENT},
     {"EnableGithubRunner", PERSISTENT},
 };
 

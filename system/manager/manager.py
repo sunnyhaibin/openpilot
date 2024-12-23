@@ -42,11 +42,19 @@ def manager_init() -> None:
     ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
   ]
 
+  sunnypilot_default_params: list[tuple[str, str | bytes]] = [
+    ("Mads", "1"),
+    ("MadsMainCruiseAllowed", "1"),  # TODO-SP: if we ever change the default to 0, it will have implications on users without LFA/LKAS button.
+    ("MadsPauseLateralOnBrake", "0"),
+    ("MadsUnifiedEngagementMode", "1"),
+    ("HyundaiLongitudinalMainCruiseToggleable", "1"),
+  ]
+
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)
 
   # set unset params
-  for k, v in default_params:
+  for k, v in (default_params + sunnypilot_default_params):
     if params.get(k) is None:
       params.put(k, v)
 
