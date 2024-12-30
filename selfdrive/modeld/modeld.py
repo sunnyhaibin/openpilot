@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
-import os
 from openpilot.system.hardware import TICI
 
+from openpilot.selfdrive.modeld.runners.model_runner import ONNXRunner, TinygradRunner
+
 #
-USE_TINYGRAD = os.getenv('USE_TINYGRAD', True) or TICI
-if USE_TINYGRAD:
-  from tinygrad.tensor import Tensor
-  from tinygrad.dtype import dtypes
-  from openpilot.selfdrive.modeld.runners.tinygrad_helpers import qcom_tensor_from_opencl_address
-  os.environ['QCOM'] = '1'
-else:
-  from openpilot.selfdrive.modeld.runners.ort_helpers import make_onnx_cpu_runner, ORT_TYPES_TO_NP_TYPES
 import time
-import pickle
 import numpy as np
 import cereal.messaging as messaging
 from cereal import car, log
-from pathlib import Path
 from setproctitle import setproctitle
 from cereal.messaging import PubMaster, SubMaster
 from msgq.visionipc import VisionIpcClient, VisionStreamType, VisionBuf
@@ -34,13 +25,8 @@ from openpilot.selfdrive.modeld.fill_model_msg import fill_model_msg, fill_pose_
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.modeld.models.commonmodel_pyx import DrivingModelFrame, CLContext
 
-
 PROCESS_NAME = "selfdrive.modeld.modeld"
-SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
-MODEL_PATH = Path(__file__).parent / 'models/supercombo.onnx'
-MODEL_PKL_PATH = Path(__file__).parent / 'models/supercombo_tinygrad.pkl'
-METADATA_PATH = Path(__file__).parent / 'models/supercombo_metadata.pkl'
 
 class FrameMeta:
   frame_id: int = 0
@@ -61,42 +47,26 @@ class ModelState:
     self.frames = {'input_imgs': DrivingModelFrame(context), 'big_input_imgs': DrivingModelFrame(context)}
     self.prev_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
     self.full_features_20Hz = np.zeros((ModelConstants.FULL_HISTORY_BUFFER_LEN, ModelConstants.FEATURE_LEN), dtype=np.float32)
-    self.desire_20Hz = np.zeros((ModelConstants.FULL_HISTORY_BUFFER_LEN + 1, ModelConstants.DESIRE_LEN), dtype=np.float32)
+    self.desire_20Hz =  np.zeros((ModelConstants.FULL_HISTORY_BUFFER_LEN + 1, ModelConstants.DESIRE_LEN), dtype=np.float32)
+    # Initialize model runner
+    self.model_runner = TinygradRunner(self.frames) if TICI else ONNXRunner(self.frames)
 
     # img buffers are managed in openCL transform code
     self.numpy_inputs = {}
 
-    with open(METADATA_PATH, 'rb') as f:
-      model_metadata = pickle.load(f)
-    self.input_shapes =  model_metadata['input_shapes']
-
-    for key, shape in self.input_shapes.items():
+    for key, shape in self.model_runner.input_shapes.items():
       if key not in self.frames: # Managed by opencl
         self.numpy_inputs[key] = np.zeros(shape, dtype=np.float32)
 
-    self.output_slices = model_metadata['output_slices']
-    net_output_size = model_metadata['output_shapes']['outputs'][1]
-    self.output = np.zeros(net_output_size, dtype=np.float32)
     self.parser = Parser()
 
-    if USE_TINYGRAD:
-      self.tensor_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
-      with open(MODEL_PKL_PATH, "rb") as f:
-        self.model_run = pickle.load(f)
-    else:
-      self.onnx_cpu_runner = make_onnx_cpu_runner(MODEL_PATH)
-      self.onnx_model_metadata = {input.name: input.type for input in self.onnx_cpu_runner.get_inputs()}
+    net_output_size = self.model_runner.model_metadata['output_shapes']['outputs'][1]
+    self.output = np.zeros(net_output_size, dtype=np.float32)
 
     num_elements = self.numpy_inputs['features_buffer'].shape[1]
     step_size = int(-100 / num_elements)
     self.full_features_20Hz_idxs = np.arange(step_size, step_size * (num_elements + 1), step_size)[::-1]
     self.desire_reshape_dims = (self.numpy_inputs['desire'].shape[0], self.numpy_inputs['desire'].shape[1], -1, self.numpy_inputs['desire'].shape[2])
-
-  def slice_outputs(self, model_outputs: np.ndarray) -> dict[str, np.ndarray]:
-    parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in self.output_slices.items()}
-    if SEND_RAW_PRED:
-      parsed_model_outputs['raw_pred'] = model_outputs.copy()
-    return parsed_model_outputs
 
   def run(self, buf: VisionBuf, wbuf: VisionBuf, transform: np.ndarray, transform_wide: np.ndarray,
                 inputs: dict[str, np.ndarray], prepare_only: bool) -> dict[str, np.ndarray] | None:
@@ -113,31 +83,15 @@ class ModelState:
     imgs_cl = {'input_imgs': self.frames['input_imgs'].prepare(buf, transform.flatten()),
                'big_input_imgs': self.frames['big_input_imgs'].prepare(wbuf, transform_wide.flatten())}
 
-    if USE_TINYGRAD:
-      # The imgs tensors are backed by opencl memory, only need init once
-      for key in imgs_cl:
-        if not TICI or key not in self.tensor_inputs:
-          index = self.model_run.captured.expected_names.index(key)
-          _, _, dtype, device = self.model_run.captured.expected_st_vars_dtype_device[index]
-          if TICI:
-            self.tensor_inputs[key] = qcom_tensor_from_opencl_address(imgs_cl[key].mem_address, self.input_shapes[key], dtype=dtype)
-          else:
-            shape = self.frames[key].buffer_from_cl(imgs_cl[key]).reshape(self.input_shapes[key])
-            self.tensor_inputs[key] = Tensor(shape, device=device, dtype=dtype).realize()
-    else:
-      for key in imgs_cl:
-        dtype = self.onnx_model_metadata[key]
-        self.numpy_inputs[key] = self.frames[key].buffer_from_cl(imgs_cl[key]).astype(ORT_TYPES_TO_NP_TYPES[dtype]).reshape(self.input_shapes[key])
+    # Prepare inputs using the model runner
+    self.model_runner.prepare_inputs(imgs_cl, self.numpy_inputs)
 
     if prepare_only:
       return None
 
-    if USE_TINYGRAD:
-      self.output = self.model_run(**self.tensor_inputs).numpy().flatten()
-    else:
-      self.output = self.onnx_cpu_runner.run(None, self.numpy_inputs)[0].flatten()
-
-    outputs = self.parser.parse_outputs(self.slice_outputs(self.output))
+    # Run model inference
+    self.output = self.model_runner.run_model()
+    outputs = self.parser.parse_outputs(self.model_runner.slice_outputs(self.output))
 
     self.full_features_20Hz[:-1] = self.full_features_20Hz[1:]
     self.full_features_20Hz[-1] = outputs['hidden_state'][0, :]
@@ -211,7 +165,6 @@ def main(demo=False):
   meta_main = FrameMeta()
   meta_extra = FrameMeta()
 
-
   if demo:
     CP = get_demo_car_params()
   else:
@@ -261,10 +214,6 @@ def main(demo=False):
     is_rhd = sm["driverMonitoringState"].isRHD
     frame_id = sm["roadCameraState"].frameId
     v_ego = max(sm["carState"].vEgo, 0.)
-    lateral_control_params = None #TODO-SP: hardcoded ,this shouldnt' be here this way. We should do it more dynamically
-    if "lateral_control_params" in model.numpy_inputs.keys(): #TODO-SP: hardcoded ,this shouldnt' be here this way. We should do it more dynamically
-      lateral_control_params = np.array([sm["carState"].vEgo, steer_delay], dtype=np.float32)
-
     if sm.updated["liveCalibration"] and sm.seen['roadCameraState'] and sm.seen['deviceState']:
       device_from_calib_euler = np.array(sm["liveCalibration"].rpyCalib, dtype=np.float32)
       dc = DEVICE_CAMERAS[(str(sm['deviceState'].deviceType), str(sm['roadCameraState'].sensor))]
@@ -296,8 +245,6 @@ def main(demo=False):
       'desire': vec_desire,
       'traffic_convention': traffic_convention,
       }
-    if "lateral_control_params" in model.numpy_inputs.keys():
-      inputs['lateral_control_params'] = lateral_control_params
 
     mt1 = time.perf_counter()
     model_output = model.run(buf_main, buf_extra, model_transform_main, model_transform_extra, inputs, prepare_only)
