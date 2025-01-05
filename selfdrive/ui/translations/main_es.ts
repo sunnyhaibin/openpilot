@@ -1274,6 +1274,22 @@ Esto puede tardar un minuto.</translation>
         <source>sunnylink Dongle ID not found. This may be due to weak internet connection or sunnylink registration issue. Please reboot and try again.</source>
         <translation>No se encontró el ID del dongle de sunnylink. Esto puede deberse a una conexión a internet débil o un problema de registro en sunnylink. Reinicia e inténtalo de nuevo.</translation>
     </message>
+    <message>
+        <source>THANKS</source>
+        <translation>GRACIAS</translation>
+    </message>
+    <message>
+        <source>Not Sponsor</source>
+        <translation>No es Patrocinador</translation>
+    </message>
+    <message>
+        <source>Paired</source>
+        <translation>Emparejado</translation>
+    </message>
+    <message>
+        <source>Not Paired</source>
+        <translation>No Emparejado</translation>
+    </message>
 </context>
 <context>
     <name>SunnylinkSponsorPopup</name>
