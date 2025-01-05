@@ -2561,7 +2561,7 @@ struct Event {
     customReserved0 @107 :Custom.CustomReserved0;
     modelManagerSP @108 :Custom.ModelManagerSP;
     customReserved2 @109 :Custom.CustomReserved2;
-    customReserved3 @110 :Custom.CustomReserved3;
+    controlsStateSP @110 :Custom.ControlsStateSP;
     customReserved4 @111 :Custom.CustomReserved4;
     customReserved5 @112 :Custom.CustomReserved5;
     customReserved6 @113 :Custom.CustomReserved6;

@@ -38,7 +38,7 @@ class Controls:
     self.sm = messaging.SubMaster(['liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
                                    'driverMonitoringState', 'onroadEvents', 'driverAssistance'], poll='selfdriveState')
-    self.pm = messaging.PubMaster(['carControl', 'controlsState'])
+    self.pm = messaging.PubMaster(['carControl', 'controlsState', 'ControlsStateSP'])
 
     self.steer_limited = False
     self.desired_curvature = 0.0
@@ -196,6 +196,13 @@ class Controls:
       cs.lateralControlState.torqueState = lac_log
 
     self.pm.send('controlsState', dat)
+
+    dat_sp = messaging.new_message('controlsStateSP')
+    controlsStateSP = dat_sp.controlsStateSP
+
+    controlsStateSP.accelPersonality = self.accel_personality
+
+    self.pm.send('controlsStateSP', dat_sp)
 
     # carControl
     cc_send = messaging.new_message('carControl')

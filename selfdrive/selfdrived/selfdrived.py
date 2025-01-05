@@ -5,7 +5,7 @@ import threading
 
 import cereal.messaging as messaging
 
-from cereal import car, log
+from cereal import car, log, custom
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 from panda import ALTERNATIVE_EXPERIENCE
 
@@ -114,6 +114,7 @@ class SelfdriveD:
     self.personality = self.read_personality_param()
     self.recalibrating_seen = False
     self.state_machine = StateMachine()
+    self.accel_personality = self.read_accel_personality_param()
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
     # Determine startup event
@@ -468,11 +469,18 @@ class SelfdriveD:
     except (ValueError, TypeError):
       return log.LongitudinalPersonality.standard
 
+  def read_accel_personality_param(self):
+    try:
+      return int(self.params.get("AccelPersonality"))
+    except (ValueError, TypeError):
+      return custom.AccelerationPersonality.stock
+
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
       self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
       self.personality = self.read_personality_param()
+      self.accel_personality = self.read_accel_personality_param()
       time.sleep(0.1)
 
   def run(self):
