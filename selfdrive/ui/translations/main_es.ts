@@ -1157,7 +1157,7 @@ Esto puede tardar un minuto.</translation>
     <name>SunnylinkPanel</name>
     <message>
         <source>This is the master switch, it will allow you to cutoff any sunnylink requests should you want to do that.</source>
-        <translation>Este es el interruptor principal; te permitirá desactivar completamente cualquier connectividad de sunnylink si así lo deseas.</translation>
+        <translation>Este es el interruptor principal; te permitirá desactivar completamente cualquier conectividad de sunnylink si así lo deseas.</translation>
     </message>
     <message>
         <source>Enable sunnylink</source>
@@ -1165,7 +1165,7 @@ Esto puede tardar un minuto.</translation>
     </message>
     <message>
         <source>N/A</source>
-        <translation type="unfinished">N/A</translation>
+        <translation>No disponible</translation>
     </message>
     <message>
         <source>🎉Welcome back! We&apos;re excited to see you&apos;ve enabled sunnylink again! 🚀</source>
@@ -1178,6 +1178,73 @@ Esto puede tardar un minuto.</translation>
     <message>
         <source>👋Not going to lie, it&apos;s sad to see you disabled sunnylink 😢, but we&apos;ll be here when you&apos;re ready to come back 🎉.</source>
         <translation>👋No te mentiremos, nos entristece que hayas desactivado sunnylink 😢. Estaremos aquí cuando estes listo para volver 🎉.</translation>
+    </message>
+    <message>
+        <source>Sponsor Status</source>
+        <translation>Nivel de Patrocinador</translation>
+    </message>
+    <message>
+        <source>SPONSOR</source>
+        <translation>PATROCINADOR</translation>
+    </message>
+    <message>
+        <source>Become a sponsor of sunnypilot to get early access to sunnylink features when they become available.</source>
+        <translation>Conviértete en patrocinador de sunnypilot para obtener acceso anticipado a las funciones de sunnylink cuando estén disponibles.</translation>
+    </message>
+    <message>
+        <source>Pair GitHub Account</source>
+        <translation>Emparejar cuenta de GitHub</translation>
+    </message>
+    <message>
+        <source>PAIR</source>
+        <translation>EMPAREJAR</translation>
+    </message>
+    <message>
+        <source>Pair your GitHub account to grant your device sponsor benefits, including API access on sunnylink.</source>
+        <translation>Empareja tu cuenta de GitHub para otorgar beneficios de patrocinador a tu dispositivo, incluido el acceso a la API en sunnylink.</translation>
+    </message>
+    <message>
+        <source>sunnylink Dongle ID not found. This may be due to weak internet connection or sunnylink registration issue. Please reboot and try again.</source>
+        <translation>No se encontró el ID del dongle de sunnylink. Esto puede deberse a una conexión a internet débil o un problema de registro en sunnylink. Reinicia e inténtalo de nuevo.</translation>
+    </message>
+</context>
+<context>
+    <name>SunnylinkSponsorPopup</name>
+    <message>
+        <source>Scan the QR code to login to your GitHub account</source>
+        <translation>Escanea el código QR para iniciar sesión en tu cuenta de GitHub</translation>
+    </message>
+    <message>
+        <source>Follow the prompts to complete the pairing process</source>
+        <translation>Sigue las instrucciones para completar el proceso de emparejamiento</translation>
+    </message>
+    <message>
+        <source>Re-enter the &quot;sunnylink&quot; panel to verify sponsorship status</source>
+        <translation>Vuelve a ingresar al panel de &quot;sunnylink&quot; para verificar el estado de patrocinio</translation>
+    </message>
+    <message>
+        <source>If sponsorship status was not updated, please contact a moderator on Discord at https://discord.gg/sunnypilot</source>
+        <translation>Si el estado de patrocinio no se actualizó, por favor contacta a un moderador en Discord en https://discord.gg/sunnypilot</translation>
+    </message>
+    <message>
+        <source>Scan the QR code to visit sunnyhaibin&apos;s GitHub Sponsors page</source>
+        <translation>Escanea el código QR para visitar la página de patrocinadores de GitHub de sunnyhaibin</translation>
+    </message>
+    <message>
+        <source>Choose your sponsorship tier and confirm your support</source>
+        <translation>Elige tu nivel de patrocinio y confirma tu apoyo</translation>
+    </message>
+    <message>
+        <source>Join our community on Discord at https://discord.gg/sunnypilot and reach out to a moderator to confirm your sponsor status</source>
+        <translation>Únete a nuestra comunidad en Discord en https://discord.gg/sunnypilot y contacta a un moderador para confirmar tu estado de patrocinador</translation>
+    </message>
+    <message>
+        <source>Pair your GitHub account</source>
+        <translation>Emparejar tu cuenta de GitHub</translation>
+    </message>
+    <message>
+        <source>Early Access: Become a sunnypilot Sponsor</source>
+        <translation>Acceso anticipado: Conviértete en patrocinador de sunnypilot</translation>
     </message>
 </context>
 <context>
