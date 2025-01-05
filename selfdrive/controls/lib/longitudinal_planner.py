@@ -2,6 +2,8 @@
 import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
+from openpilot.common.params import Params
+from cereal import custom
 
 import cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
@@ -15,6 +17,9 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_speed_error
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
+
+from openpilot.sunnypilot.selfdrive.controls.lib.accel_controller import AccelController
+
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
@@ -84,6 +89,18 @@ class LongitudinalPlanner:
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
 
+    self.params = Params()
+    self.param_read_counter = 0
+    self.read_param()
+
+    self.accel_controller = AccelController()
+
+  def read_param(self):
+    try:
+      pass
+    except AttributeError:
+      self.accel_controller = AccelController()
+
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == ModelConstants.IDX_N and
@@ -135,6 +152,21 @@ class LongitudinalPlanner:
     else:
       accel_limits = [ACCEL_MIN, ACCEL_MAX]
       accel_limits_turns = [ACCEL_MIN, ACCEL_MAX]
+
+    # override accel using Accel Controller
+    if self.accel_controller.is_enabled(accel_personality=sm['controlsStateSP'].accelPersonality):
+      # get min, max from accel controller
+      min_limit, max_limit = self.accel_controller.get_accel_limits(v_ego, accel_limits)
+      if self.mpc.mode == 'acc':
+        # VOACC car, just give it max min (-1.2) so I can brake harder
+        accel_limits = [A_CRUISE_MIN, max_limit] if self.CP.radarUnavailable else [min_limit, max_limit]
+        # recalculate limit turn according to the new min, max
+        steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+        accel_limits_turns = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_limits, self.CP)
+      else:
+        # blended, just give it max min (-3.5) and max from accel controller
+        accel_limits = [ACCEL_MIN, ACCEL_MAX]
+        accel_limits_turns = [ACCEL_MIN, ACCEL_MAX]
 
     if reset_state:
       self.v_desired_filter.x = v_ego
