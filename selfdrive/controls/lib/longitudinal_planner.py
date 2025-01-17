@@ -185,11 +185,14 @@ class LongitudinalPlanner(LongitudinalPlannerSP):
     # clip limits, cannot init MPC outside of bounds
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
-
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
+    lead_xv_0 = self.mpc.process_lead(sm['radarState'].leadOne)
+    lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
+    v_lead0 = lead_xv_0[0,1]
+    v_lead1 = lead_xv_1[0,1]
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality, v_lead0=v_lead0, v_lead1=v_lead1, fast_take_off=self.fast_take_off)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    print("Fast take off status:", self.fast_take_off)
+    #print("Fast take off status:", self.fast_take_off)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality, fast_take_off=self.fast_take_off)
 
 

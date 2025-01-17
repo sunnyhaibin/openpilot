@@ -288,15 +288,30 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard):
+  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0, fast_take_off=False):
     jerk_factor = get_jerk_factor(personality)
+    v_ego = self.x0[1]
+    # Default values for dynamic scaling factors
+    j_ego_v_ego = 1
+    a_change_v_ego = 1
+    if fast_take_off:
+      # Adjustments for sluggish acceleration
+      v_ego_bps = [0, 10]
+      if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
+        j_ego_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
+        a_change_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
+      print(f"Fast Take-Off Enabled: j_ego_v_ego={j_ego_v_ego}, a_change_v_ego={a_change_v_ego}, v_ego={v_ego}")
+    else:
+      print("Fast Take-Off Disabled")
+
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
-      cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost, jerk_factor * J_EGO_COST]
+      cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego] \
+        if fast_take_off else [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * A_CHANGE_COST, jerk_factor * J_EGO_COST]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
     elif self.mode == 'blended':
       a_change_cost = 40.0 if prev_accel_constraint else 0
-      cost_weights = [0., 0.1, 0.2, 5.0, a_change_cost, 1.0]
+      cost_weights = [0., 0.1, 0.2, 5.0, a_change_cost * a_change_v_ego, 1.0] if fast_take_off else [0., 0.1, 0.2, 5.0, a_change_cost, 1.0]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, 50.0]
     else:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')

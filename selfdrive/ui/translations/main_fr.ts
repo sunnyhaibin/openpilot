@@ -1494,6 +1494,14 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
         <source>Enable toggle to allow the model to determine when to use sunnypilot ACC or sunnypilot End to End Longitudinal.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Very fast prius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When prius goes faster then sunnys car :) vroom</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Updater</name>
