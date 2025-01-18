@@ -124,31 +124,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enables or disables the github runner service.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable GitHub runner service</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Hyundai: Enable Radar Tracks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Enable this to attempt to enable radar tracks for Hyundai, Kia, and Genesis models equipped with the supported Mando SCC radar. This allows sunnypilot to use radar data for improved lead tracking and overall longitudinal performance.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toyota: Auto Brake Hold</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toyota: Enhanced BSM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toyota: custom tune</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1486,6 +1466,30 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>When prius goes faster then sunnys car :) vroom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toyota: Auto Brake Hold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>umm auto brake hold?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toyota: Enhanced BSM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>like blind spot monitoring but better?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toyota: custom tune</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>idk something gas and brake</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

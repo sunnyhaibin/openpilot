@@ -43,6 +43,24 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_blank.png",
     },
     {
+      "ToyotaAutoHold",
+      tr("Toyota: Auto Brake Hold"),
+      tr("umm auto brake hold?"),
+      "../assets/offroad/icon_blank.png",
+    },
+    {
+      "ToyotaEnhancedBsm",
+      tr("Toyota: Enhanced BSM"),
+      tr("like blind spot monitoring but better?"),
+      "../assets/offroad/icon_blank.png",
+    },
+    {
+      "ToyotaTSS2Long",
+      tr("Toyota: custom tune"),
+      tr("idk something gas and brake"),
+      "../assets/offroad/icon_blank.png",
+    },
+    {
       "DisengageOnAccelerator",
       tr("Disengage on Accelerator Pedal"),
       tr("When enabled, pressing the accelerator pedal will disengage openpilot."),
