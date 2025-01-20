@@ -1,9 +1,11 @@
 widgets_src = [
+  "sunnypilot/qt/request_repeater.cc",
   "sunnypilot/qt/widgets/toggle.cc",
   "sunnypilot/qt/widgets/controls.cc",
   "sunnypilot/qt/widgets/drive_stats.cc",
   "sunnypilot/qt/widgets/prime.cc",
   "sunnypilot/qt/widgets/scrollview.cc",
+  "sunnypilot/qt/offroad/settings/sunnylink/sponsor_widget.cc"
 ]
 
 qt_util = [
@@ -12,6 +14,7 @@ qt_util = [
 
 qt_src = [
   "sunnypilot/ui.cc",
+  "sunnypilot/qt/api.cc",
   "sunnypilot/qt/sidebar.cc",
   "sunnypilot/qt/window.cc",
   "sunnypilot/qt/home.cc",
@@ -33,7 +36,14 @@ sunnypilot_panel_qt_src = [
   "sunnypilot/qt/offroad/settings/sunnypilot/mads_settings.cc",
 ]
 
-sp_widgets_src = widgets_src
+network_src = [
+  "sunnypilot/qt/network/sunnylink/sunnylink_client.cc",
+  "sunnypilot/qt/network/sunnylink/services/base_device_service.cc",
+  "sunnypilot/qt/network/sunnylink/services/role_service.cc",
+  "sunnypilot/qt/network/sunnylink/services/user_service.cc"
+]
+
+sp_widgets_src = widgets_src + network_src
 sp_qt_src = qt_src + sunnypilot_panel_qt_src
 sp_qt_util = qt_util
 

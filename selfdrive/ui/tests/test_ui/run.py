@@ -189,6 +189,16 @@ def setup_settings_sunnylink(click, pm: PubMaster, scroll=None):
   click(278, 522)
   time.sleep(UI_DELAY)
 
+def setup_settings_sunnylink_sponsor_button(click, pm: PubMaster):
+  setup_settings_sunnylink(click, pm)
+  click(1967, 225)
+  time.sleep(UI_DELAY)
+
+def setup_settings_sunnylink_pair_button(click, pm: PubMaster):
+  setup_settings_sunnylink(click, pm)
+  click(1967, 432)
+  time.sleep(UI_DELAY)
+
 def setup_settings_sunnypilot(click, pm: PubMaster, scroll=None):
   setup_settings_device(click, pm)
   click(278, 852)
@@ -234,6 +244,8 @@ CASES = {
 
 CASES.update({
   "settings_sunnylink": setup_settings_sunnylink,
+  "settings_sunnylink_sponsor_button": setup_settings_sunnylink_sponsor_button,
+  "settings_sunnylink_pair_button": setup_settings_sunnylink_pair_button,
   "settings_sunnypilot": setup_settings_sunnypilot,
   "settings_sunnypilot_mads": setup_settings_sunnypilot_mads,
   "settings_trips": setup_settings_trips,
