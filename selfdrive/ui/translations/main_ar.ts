@@ -139,6 +139,26 @@
         <source>Enables or disables the github runner service.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable ADB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Control (Alpha)</source>
+        <translation type="unfinished">التحكم الطولي openpilot (ألفا)</translation>
+    </message>
+    <message>
+        <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
+        <translation type="unfinished">تحذير: التحكم الطولي في openpilot في المرحلة ألفا لهذه السيارة، وسيقوم بتعطيل مكابح الطوارئ الآلية (AEB).</translation>
+    </message>
+    <message>
+        <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
+        <translation type="unfinished">في هذه السيارة يعمل openpilot افتراضياً بالشكل المدمج في التحكم التكيفي في السرعة بدلاً من التحكم الطولي. قم بتمكين هذا الخيار من أجل الانتقال إلى التحكم الطولي. يوصى بتمكين الوضع التجريبي عند استخدام وضع التحكم الطولي ألفا من openpilot.</translation>
+    </message>
 </context>
 <context>
     <name>DevicePanel</name>
@@ -858,6 +878,10 @@ This may take up to a minute.</source>
         <source>Trips</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Setup</name>
@@ -1404,15 +1428,15 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>openpilot Longitudinal Control (Alpha)</source>
-        <translation>التحكم الطولي openpilot (ألفا)</translation>
+        <translation type="vanished">التحكم الطولي openpilot (ألفا)</translation>
     </message>
     <message>
         <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
-        <translation>تحذير: التحكم الطولي في openpilot في المرحلة ألفا لهذه السيارة، وسيقوم بتعطيل مكابح الطوارئ الآلية (AEB).</translation>
+        <translation type="vanished">تحذير: التحكم الطولي في openpilot في المرحلة ألفا لهذه السيارة، وسيقوم بتعطيل مكابح الطوارئ الآلية (AEB).</translation>
     </message>
     <message>
         <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
-        <translation>في هذه السيارة يعمل openpilot افتراضياً بالشكل المدمج في التحكم التكيفي في السرعة بدلاً من التحكم الطولي. قم بتمكين هذا الخيار من أجل الانتقال إلى التحكم الطولي. يوصى بتمكين الوضع التجريبي عند استخدام وضع التحكم الطولي ألفا من openpilot.</translation>
+        <translation type="vanished">في هذه السيارة يعمل openpilot افتراضياً بالشكل المدمج في التحكم التكيفي في السرعة بدلاً من التحكم الطولي. قم بتمكين هذا الخيار من أجل الانتقال إلى التحكم الطولي. يوصى بتمكين الوضع التجريبي عند استخدام وضع التحكم الطولي ألفا من openpilot.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>

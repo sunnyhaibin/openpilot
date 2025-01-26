@@ -30,16 +30,15 @@ AccelPersonality = custom.LongitudinalPlanSP.AccelerationPersonality
 
 # Accel personality by @arne182 modified by cgw and kumar
 
-_DP_CRUISE_MIN_V_ECO =    [-1.0,  -1.0]
-_DP_CRUISE_MIN_V_NORMAL = [-1.0,  -1.0]
-_DP_CRUISE_MIN_V_SPORT =  [-1.0,  -1.0]
-_DP_CRUISE_MIN_BP =       [0., 20.]
+_DP_CRUISE_MIN_V_ECO =    [-0.020, -0.020, -0.16, -0.30, -0.30, -0.76, -0.76, -1.0,  -1.0]
+_DP_CRUISE_MIN_V_NORMAL = [-0.022, -0.022, -0.18, -0.31, -0.31, -0.77, -0.77, -1.0,  -1.0]
+_DP_CRUISE_MIN_V_SPORT =  [-0.024, -0.024, -0.32, -0.32, -0.32, -0.78, -0.78, -1.2,  -1.2]
+_DP_CRUISE_MIN_BP =       [0.,     2.0,    10.,   10.01, 15.,   15.01, 20.,   20.01, 40.]
 
-
-_DP_CRUISE_MAX_V_ECO =    [2.0, 2.0, 2.0, 1.65, 0.92, .532, .432, .32,  .095]
-_DP_CRUISE_MAX_V_NORMAL = [2.0, 2.0, 2.0, 1.80, 1.03, .62,  .47,  .36,  .11]
-_DP_CRUISE_MAX_V_SPORT =  [2.0, 2.0, 2.0, 2.00, 1.25, .71,  .54,  .46,  .2]
-_DP_CRUISE_MAX_BP =       [0.,  1.,  6.,  8.,   11.,  20.,  25.,  30.,  55.]
+_DP_CRUISE_MAX_V_ECO =    [1.68, 1.68, 1.68, 1.68, 0.85, .532, .432, .32,  .28,  .085]
+_DP_CRUISE_MAX_V_NORMAL = [1.85, 1.85, 1.85, 1.85, 0.95, .73,  .56,  .36,  .30,  .12]
+_DP_CRUISE_MAX_V_SPORT =  [2.00, 2.00, 2.00, 2.00, 1.10, .78,  .61,  .42,  .333, .2]
+_DP_CRUISE_MAX_BP =       [0.,   1.,   6.,   8.,   11.,  16,   20.,  25.,  30.,  55.]
 
 
 class AccelController:

@@ -139,6 +139,26 @@
         <source>Enables or disables the github runner service.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable ADB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Control (Alpha)</source>
+        <translation type="unfinished">openpilot 縱向控制 (Alpha 版)</translation>
+    </message>
+    <message>
+        <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
+        <translation type="unfinished">警告：此車輛的 openpilot 縱向控制功能目前處於 Alpha 版本，使用此功能將會停用自動緊急煞車（AEB）功能。</translation>
+    </message>
+    <message>
+        <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
+        <translation type="unfinished">在這輛車上，openpilot 預設使用車輛內建的主動巡航控制（ACC），而非 openpilot 的縱向控制。啟用此項功能可切換至 openpilot 的縱向控制。當啟用 openpilot 縱向控制 Alpha 版本時，建議同時啟用實驗性模式（Experimental mode）。</translation>
+    </message>
 </context>
 <context>
     <name>DevicePanel</name>
@@ -838,6 +858,10 @@ This may take up to a minute.</source>
         <source>Trips</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Setup</name>
@@ -1408,15 +1432,15 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>openpilot Longitudinal Control (Alpha)</source>
-        <translation>openpilot 縱向控制 (Alpha 版)</translation>
+        <translation type="vanished">openpilot 縱向控制 (Alpha 版)</translation>
     </message>
     <message>
         <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
-        <translation>警告：此車輛的 openpilot 縱向控制功能目前處於 Alpha 版本，使用此功能將會停用自動緊急煞車（AEB）功能。</translation>
+        <translation type="vanished">警告：此車輛的 openpilot 縱向控制功能目前處於 Alpha 版本，使用此功能將會停用自動緊急煞車（AEB）功能。</translation>
     </message>
     <message>
         <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
-        <translation>在這輛車上，openpilot 預設使用車輛內建的主動巡航控制（ACC），而非 openpilot 的縱向控制。啟用此項功能可切換至 openpilot 的縱向控制。當啟用 openpilot 縱向控制 Alpha 版本時，建議同時啟用實驗性模式（Experimental mode）。</translation>
+        <translation type="vanished">在這輛車上，openpilot 預設使用車輛內建的主動巡航控制（ACC），而非 openpilot 的縱向控制。啟用此項功能可切換至 openpilot 的縱向控制。當啟用 openpilot 縱向控制 Alpha 版本時，建議同時啟用實驗性模式（Experimental mode）。</translation>
     </message>
     <message>
         <source>Aggressive</source>

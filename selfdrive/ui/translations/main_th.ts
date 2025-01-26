@@ -139,6 +139,26 @@
         <source>Enables or disables the github runner service.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable ADB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>openpilot Longitudinal Control (Alpha)</source>
+        <translation type="unfinished">ระบบควบคุมการเร่ง/เบรคโดย openpilot (Alpha)</translation>
+    </message>
+    <message>
+        <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
+        <translation type="unfinished">คำเตือน: การควบคุมการเร่ง/เบรคโดย openpilot สำหรับรถคันนี้ยังอยู่ในสถานะ alpha และระบบเบรคฉุกเฉินอัตโนมัติ (AEB) จะถูกปิด</translation>
+    </message>
+    <message>
+        <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
+        <translation type="unfinished">โดยปกติสำหรับรถคันนี้ openpilot จะควบคุมการเร่ง/เบรคด้วยระบบ ACC จากโรงงาน แทนการควยคุมโดย openpilot เปิดสวิตซ์นี้เพื่อให้ openpilot ควบคุมการเร่ง/เบรค แนะนำให้เปิดโหมดทดลองเมื่อต้องการให้ openpilot ควบคุมการเร่ง/เบรค ซึ่งอยู่ในสถานะ alpha</translation>
+    </message>
 </context>
 <context>
     <name>DevicePanel</name>
@@ -838,6 +858,10 @@ This may take up to a minute.</source>
         <source>Trips</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Setup</name>
@@ -1408,15 +1432,15 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>openpilot Longitudinal Control (Alpha)</source>
-        <translation>ระบบควบคุมการเร่ง/เบรคโดย openpilot (Alpha)</translation>
+        <translation type="vanished">ระบบควบคุมการเร่ง/เบรคโดย openpilot (Alpha)</translation>
     </message>
     <message>
         <source>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</source>
-        <translation>คำเตือน: การควบคุมการเร่ง/เบรคโดย openpilot สำหรับรถคันนี้ยังอยู่ในสถานะ alpha และระบบเบรคฉุกเฉินอัตโนมัติ (AEB) จะถูกปิด</translation>
+        <translation type="vanished">คำเตือน: การควบคุมการเร่ง/เบรคโดย openpilot สำหรับรถคันนี้ยังอยู่ในสถานะ alpha และระบบเบรคฉุกเฉินอัตโนมัติ (AEB) จะถูกปิด</translation>
     </message>
     <message>
         <source>On this car, openpilot defaults to the car&apos;s built-in ACC instead of openpilot&apos;s longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha.</source>
-        <translation>โดยปกติสำหรับรถคันนี้ openpilot จะควบคุมการเร่ง/เบรคด้วยระบบ ACC จากโรงงาน แทนการควยคุมโดย openpilot เปิดสวิตซ์นี้เพื่อให้ openpilot ควบคุมการเร่ง/เบรค แนะนำให้เปิดโหมดทดลองเมื่อต้องการให้ openpilot ควบคุมการเร่ง/เบรค ซึ่งอยู่ในสถานะ alpha</translation>
+        <translation type="vanished">โดยปกติสำหรับรถคันนี้ openpilot จะควบคุมการเร่ง/เบรคด้วยระบบ ACC จากโรงงาน แทนการควยคุมโดย openpilot เปิดสวิตซ์นี้เพื่อให้ openpilot ควบคุมการเร่ง/เบรค แนะนำให้เปิดโหมดทดลองเมื่อต้องการให้ openpilot ควบคุมการเร่ง/เบรค ซึ่งอยู่ในสถานะ alpha</translation>
     </message>
     <message>
         <source>Aggressive</source>
