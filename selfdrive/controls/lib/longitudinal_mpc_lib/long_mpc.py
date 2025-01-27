@@ -297,8 +297,8 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0, fast_take_off=False, distance_to_lead=100):
-    fast_take_off = False
+def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0, fast_take_off=False, distance_to_lead=100):
+    #fast_take_off = False
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
     
@@ -310,17 +310,21 @@ class LongitudinalMpc:
       v_ego_bps = [0, 10]
       v_lead_speed = max(v_lead0, v_lead1)  # Get the highest lead speed
       v_gap = v_lead_speed - v_ego  # Speed difference
-      gap_factor = np.clip(distance_to_lead / 20, 0.5, 1.0)  # Reduce acceleration if close to lead
+      gap_factor = np.clip(distance_to_lead / 20, 0.5, 1.0)  # Reduce acceleration if too close to lead
 
-      # ✅ Prevent ego from accelerating too much if lead is slow
+      # Prevent ego from accelerating too much if lead is slow
       if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0) and v_lead_speed > 10:
         j_ego_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
         a_change_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0]) * gap_factor  # Reduce if too close
-        
-        # ✅ If following distance is small, reduce acceleration force
+
+        # If following distance is small, reduce acceleration force more aggressively
         if distance_to_lead < 15:  # If too close, further reduce acceleration
-          a_change_v_ego *= 0.6  
-          j_ego_v_ego *= 0.7  
+          a_change_v_ego *= 0.4  # More aggressive reduction when close
+          j_ego_v_ego *= 0.5    # Even further reduction in jerk when close
+
+        # Keep the following distance above a threshold
+        if distance_to_lead < 10:  # If we are really close
+          a_change_v_ego = max(a_change_v_ego * 0.3, 0.2)  # Do not allow full throttle when too close to lead
 
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
@@ -347,6 +351,7 @@ class LongitudinalMpc:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')
 
     self.set_cost_weights(cost_weights, constraint_cost_weights)
+
 
   def set_cur_state(self, v, a):
     v_prev = self.x0[1]
