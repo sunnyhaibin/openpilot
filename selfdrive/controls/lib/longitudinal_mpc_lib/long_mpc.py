@@ -62,9 +62,9 @@ def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
     return 1.0
   elif personality==log.LongitudinalPersonality.standard:
-    return 0.5
+    return 0.75
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.3
+    return 0.5
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -83,27 +83,26 @@ def get_stopped_equivalence_factor(v_lead):
   return (v_lead**2) / (2 * COMFORT_BRAKE)
 
 def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
-  v_diff_offset_max = 12  # 🔧 Controls max offset distance (default: 10m, increase for more aggression)
+  v_diff_offset_max = 12  # Max additional offset distance
   delta_speed = v_lead - v_ego  # Relative speed of lead vs. ego
 
-  v_diff_offset = np.zeros_like(delta_speed)  # Ensures proper shape (works with scalars & arrays)
+  v_diff_offset = np.zeros_like(delta_speed)  # Ensures proper shape
 
   mask = delta_speed > 0  # Only apply logic when lead is pulling away
 
   if np.any(mask):
-    # 🔧 **Scaling Factor - Adjusts offset growth rate based on ego speed**
-    # Higher = faster acceleration demand
-    scaling_factor = np.interp(v_ego, [0, 10, 15], [2.4, 1.8, 1.4])  # Try tweaking the [2.0, 1.2] range
+    # 🔧 **Scaling Factor - Higher acceleration demand at lower speeds**
+    scaling_factor = np.interp(v_ego, [0, 2, 8, 16], [3.0, 2.5, 2.2, 1.8])  # Increased low-speed response
     v_diff_offset[mask] = delta_speed[mask] * scaling_factor
-    v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)  # Limits offset
+    v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
 
-    # 🔧 **Ego Speed Scaling - Reduces offset effect at higher speeds for smoothness**
-    # Lower values at high speeds prevent unnecessary jerks
-    ego_scaling = np.interp(v_ego, [0, 5, 20], [1.0, 0.95, 0.90])   # Try adjusting [1.0, 0.3] for different response
+    # 🔧 **Ego Speed Scaling - Limits effect at higher speeds for stability**
+    ego_scaling = np.interp(v_ego, [0, 1, 10, 20], [1.0, 1.2, 1.1, 0.95])  # Slightly stronger response at low speed
     v_diff_offset *= ego_scaling
 
   stopping_distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
   return stopping_distance
+
 
 
 def get_safe_obstacle_distance(v_ego, t_follow):
@@ -305,23 +304,38 @@ class LongitudinalMpc:
     j_ego_v_ego = 1
     a_change_v_ego = 1
     if fast_take_off:
-      # Adjustments for sluggish acceleration
       v_ego_bps = [0, 10]
-      if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
+      v_lead_speed = max(v_lead0, v_lead1)  # Get the fastest lead speed
+
+      #Prevent ego from accelerating too much if lead is slow
+      if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0) and v_lead_speed > 10:
         j_ego_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
         a_change_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
-      #print(f"Fast Take-Off Enabled: j_ego_v_ego={j_ego_v_ego}, a_change_v_ego={a_change_v_ego}, v_ego={v_ego}")
-    #else:
-      #print("Fast Take-Off Disabled")
+
+        #Reduce aggression when too close to lead
+        v_gap = v_lead_speed - v_ego
+        if v_gap < 3.0:  # If following too closely, reduce take-off aggressiveness
+          a_change_v_ego *= 0.7
+          j_ego_v_ego *= 0.8
 
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
-      cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego] \
-        if fast_take_off else [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * A_CHANGE_COST, jerk_factor * J_EGO_COST]
+      cost_weights = [
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
+        jerk_factor * a_change_cost * a_change_v_ego,
+        jerk_factor * J_EGO_COST * j_ego_v_ego
+      ] if fast_take_off else [
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
+        jerk_factor * A_CHANGE_COST, jerk_factor * J_EGO_COST
+      ]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
     elif self.mode == 'blended':
       a_change_cost = 40.0 if prev_accel_constraint else 0
-      cost_weights = [0., 0.1, 0.2, 5.0, a_change_cost * a_change_v_ego, 1.0] if fast_take_off else [0., 0.1, 0.2, 5.0, a_change_cost, 1.0]
+      cost_weights = [
+        0., 0.1, 0.2, 5.0, a_change_cost * a_change_v_ego, 1.0
+      ] if fast_take_off else [
+        0., 0.1, 0.2, 5.0, a_change_cost, 1.0
+      ]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, 50.0]
     else:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')
