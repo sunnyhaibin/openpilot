@@ -92,12 +92,12 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
 
   if np.any(mask):
     # 🔧 **Scaling Factor - Higher acceleration demand at lower speeds**
-    scaling_factor = np.interp(v_ego, [0, 2, 8, 16], [3.0, 2.5, 2.2, 1.8])  # Increased low-speed response
+    scaling_factor = np.interp(v_ego, [0, 2, 8, 16, 22], [2.4, 1.9, 1.8, 1.8, 1.0])  # Increased low-speed response
     v_diff_offset[mask] = delta_speed[mask] * scaling_factor
     v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
 
     # 🔧 **Ego Speed Scaling - Limits effect at higher speeds for stability**
-    ego_scaling = np.interp(v_ego, [0, 1, 10, 20], [1.0, 1.2, 1.1, 0.95])  # Slightly stronger response at low speed
+    ego_scaling = np.interp(v_ego, [0, 1, 10, 20], [1.0, 1.3, 1.2, 0.85])  # Slightly stronger response at low speed
     v_diff_offset *= ego_scaling
 
   stopping_distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
