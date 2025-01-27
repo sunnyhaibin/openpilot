@@ -297,38 +297,42 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0, fast_take_off=False):
+  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0, fast_take_off=False, distance_to_lead=100):
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
+    
     # Default values for dynamic scaling factors
     j_ego_v_ego = 1
     a_change_v_ego = 1
+
     if fast_take_off:
       v_ego_bps = [0, 10]
-      v_lead_speed = max(v_lead0, v_lead1)  # Get the fastest lead speed
+      v_lead_speed = max(v_lead0, v_lead1)  # Get the highest lead speed
+      v_gap = v_lead_speed - v_ego  # Speed difference
+      gap_factor = np.clip(distance_to_lead / 20, 0.5, 1.0)  # Reduce acceleration if close to lead
 
-      #Prevent ego from accelerating too much if lead is slow
+      # ✅ Prevent ego from accelerating too much if lead is slow
       if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0) and v_lead_speed > 10:
         j_ego_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
-        a_change_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0])
-
-        #Reduce aggression when too close to lead
-        v_gap = v_lead_speed - v_ego
-        if v_gap < 3.0:  # If following too closely, reduce take-off aggressiveness
-          a_change_v_ego *= 0.7
-          j_ego_v_ego *= 0.8
+        a_change_v_ego = np.interp(v_ego, v_ego_bps, [0.10, 1.0]) * gap_factor  # Reduce if too close
+        
+        # ✅ If following distance is small, reduce acceleration force
+        if distance_to_lead < 15:  # If too close, further reduce acceleration
+          a_change_v_ego *= 0.6  
+          j_ego_v_ego *= 0.7  
 
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
       cost_weights = [
-        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
-        jerk_factor * a_change_cost * a_change_v_ego,
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, 
+        jerk_factor * a_change_cost * a_change_v_ego, 
         jerk_factor * J_EGO_COST * j_ego_v_ego
       ] if fast_take_off else [
-        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, 
         jerk_factor * A_CHANGE_COST, jerk_factor * J_EGO_COST
       ]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
+
     elif self.mode == 'blended':
       a_change_cost = 40.0 if prev_accel_constraint else 0
       cost_weights = [
@@ -337,8 +341,10 @@ class LongitudinalMpc:
         0., 0.1, 0.2, 5.0, a_change_cost, 1.0
       ]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, 50.0]
+
     else:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')
+
     self.set_cost_weights(cost_weights, constraint_cost_weights)
 
   def set_cur_state(self, v, a):
