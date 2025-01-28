@@ -92,12 +92,12 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
 
   if np.any(mask):
     # 🔧 **Stronger Low-Speed Acceleration Scaling**
-    scaling_factor = np.interp(v_ego, [0, 1, 3, 5, 9, 11, 22], [3.2, 3.0, 2.4,0.95, 0.9, 0.85, 0.8])
+    scaling_factor = np.interp(v_ego, [0, 1, 3, 5, 9, 11, 22], [3.0, 3.0, 2.4, 0.95, 0.9, 0.85, 0.8])  
     v_diff_offset[mask] = delta_speed[mask] * scaling_factor
     v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
 
     # 🔧 **Reduce Ego Speed Scaling Effect at Low Speeds**
-    ego_scaling = np.interp(v_ego, [0, 1, 3, 5, 11, 20], [2.0, 2.0, 1.6, 1.0, 0.9, 0.85])
+    ego_scaling = np.interp(v_ego, [0, 1, 3, 5, 11, 20], [1.8, 1.7, 1.6, 1.0, 0.9, 0.85])  
     v_diff_offset *= ego_scaling
 
   stopping_distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
@@ -300,7 +300,7 @@ class LongitudinalMpc:
     fast_take_off = False
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
-
+    
     # Default values for dynamic scaling factors
     j_ego_v_ego = 1
     a_change_v_ego = 1
@@ -328,11 +328,11 @@ class LongitudinalMpc:
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
       cost_weights = [
-        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
-        jerk_factor * a_change_cost * a_change_v_ego,
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, 
+        jerk_factor * a_change_cost * a_change_v_ego, 
         jerk_factor * J_EGO_COST * j_ego_v_ego
       ] if fast_take_off else [
-        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST,
+        X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, 
         jerk_factor * A_CHANGE_COST, jerk_factor * J_EGO_COST
       ]
       constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
@@ -470,7 +470,7 @@ class LongitudinalMpc:
 
     self.run()
     if (np.any(lead_xv_0[FCW_IDXS,0] - self.x_sol[FCW_IDXS,0] < CRASH_DISTANCE) and
-          radarstate.leadOne.modelProb > 0.9):
+            radarstate.leadOne.modelProb > 0.9):
       self.crash_cnt += 1
     else:
       self.crash_cnt = 0
@@ -481,7 +481,7 @@ class LongitudinalMpc:
       if any((lead_0_obstacle - get_safe_obstacle_distance(self.x_sol[:,1], t_follow))- self.x_sol[:,0] < 0.0):
         self.source = 'lead0'
       if any((lead_1_obstacle - get_safe_obstacle_distance(self.x_sol[:,1], t_follow))- self.x_sol[:,0] < 0.0) and \
-            (lead_1_obstacle[0] - lead_0_obstacle[0]):
+         (lead_1_obstacle[0] - lead_0_obstacle[0]):
         self.source = 'lead1'
 
   def run(self):
