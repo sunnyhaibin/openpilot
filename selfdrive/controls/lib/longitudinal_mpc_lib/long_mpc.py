@@ -71,11 +71,11 @@ def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
 
 def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
-    return 1.70
+    return 1.80
   elif personality==log.LongitudinalPersonality.standard:
-    return 1.40
+    return 1.50
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 1.15
+    return 1.20
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -92,12 +92,12 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
 
   if np.any(mask):
     # 🔧 **Stronger Low-Speed Acceleration Scaling**
-    scaling_factor = np.interp(v_ego, [0, 1, 3, 5, 9, 11, 22], [2.4, 2.4, 1.4, 0.95, 0.9, 0.85, 0.8])
+    scaling_factor = np.interp(v_ego, [0, 1, 3, 5, 9, 11, 22], [2.8, 2.0, 0.96, 0.83, 0.83, 0.83, 0.83])
     v_diff_offset[mask] = delta_speed[mask] * scaling_factor
     v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
 
     # 🔧 **Reduce Ego Speed Scaling Effect at Low Speeds**
-    ego_scaling = np.interp(v_ego, [0, 1, 3, 5, 11, 20], [1.8, 1.7, 1.6, 1.0, 0.9, 0.85])  
+    ego_scaling = np.interp(v_ego, [0, 1, 3, 5, 11, 20], [1.8, 1.7, 1.1, 1.0, 0.9, 0.9])
     v_diff_offset *= ego_scaling
 
   stopping_distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
