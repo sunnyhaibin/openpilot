@@ -228,9 +228,8 @@ void ModelRenderer::LongFuel(QPainter &painter, int height, int width) {
     qreal rectHeight = static_cast<qreal>(height);
     UIState *s = uiState();
 
+    //float currentAcceleration = (*s->sm)["carControl"].getCarControl().getActuators().getAccel();
     float currentAcceleration = (*s->sm)["carState"].getCarState().getAEgo();
-    static float smoothedAcceleration = 0.0f;
-    smoothedAcceleration += (currentAcceleration - smoothedAcceleration) / 5;  // Smooth the accel
 
     qreal gaugeSize = 140.0;  // Diameter of the semicircle
     qreal backgroundSize = gaugeSize * 1.4;  // Background is 30% larger than the gague
@@ -257,8 +256,8 @@ void ModelRenderer::LongFuel(QPainter &painter, int height, int width) {
 
     // Determine the color based on the magnitude of acceleration
     QColor indicatorColor;
-    float absoluteAcceleration = std::abs(smoothedAcceleration);
-    if (absoluteAcceleration < 0.3) {  // TODO: its too choppy, need to low pass filter
+    float absoluteAcceleration = std::abs(currentAcceleration);
+    if (absoluteAcceleration < 0.3) {
         indicatorColor = QColor(23, 241, 66, 200);  // Green for low acceleration
     } else if (absoluteAcceleration < 0.6) {
         indicatorColor = QColor(255, 166, 0, 200);  // Yellow for moderate acceleration
@@ -281,7 +280,7 @@ void ModelRenderer::LongFuel(QPainter &painter, int height, int width) {
         QRectF arcRect(centerX - gaugeSize / 2, centerY - gaugeSize / 2, gaugeSize, gaugeSize);
 
         // For positive acceleration, draw the arc to the left
-        if (smoothedAcceleration > 0) {
+        if (currentAcceleration > 0) {
             painter.drawArc(arcRect, startAngle, -spanAngle);  // Negative span for left side
         } else {
             // For negative acceleration (deceleration), draw the arc to the right
@@ -289,7 +288,7 @@ void ModelRenderer::LongFuel(QPainter &painter, int height, int width) {
         }
     }
 
-    // Draw the texte center
+    // Draw the text center
     painter.setPen(Qt::white);
     QFont font = painter.font();
     font.setPixelSize(20);
