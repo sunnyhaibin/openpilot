@@ -228,8 +228,8 @@ void ModelRenderer::LongFuel(QPainter &painter, int height, int width) {
     qreal rectHeight = static_cast<qreal>(height);
     UIState *s = uiState();
 
-    //float currentAcceleration = (*s->sm)["carControl"].getCarControl().getActuators().getAccel();
-    float currentAcceleration = (*s->sm)["carState"].getCarState().getAEgo();
+    float currentAcceleration = (*s->sm)["carControl"].getCarControl().getActuators().getAccel();
+    //float currentAcceleration = (*s->sm)["carState"].getCarState().getAEgo();
 
     qreal gaugeSize = 140.0;  // Diameter of the semicircle
     qreal backgroundSize = gaugeSize * 1.4;  // Background is 30% larger than the gague
