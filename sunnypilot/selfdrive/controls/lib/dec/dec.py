@@ -224,7 +224,7 @@ class DynamicExperimentalController:
 
     # anomaly detection for slow down events
     if self._anomaly_detection(self._slow_down_gmac.data):
-      self._slow_down_confidence *= 0.9  # Reduce confidence
+      self._slow_down_confidence *= 0.85  # Reduce confidence
       self._has_slow_down = self._slow_down_confidence > WMACConstants.SLOW_DOWN_PROB
 
     # blinker detection
