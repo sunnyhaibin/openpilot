@@ -62,7 +62,7 @@ def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
     return 1.0
   elif personality==log.LongitudinalPersonality.standard:
-    return 0.8
+    return 1.0
   elif personality==log.LongitudinalPersonality.aggressive:
     return 0.6
   else:
@@ -73,7 +73,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
     return 1.80
   elif personality==log.LongitudinalPersonality.standard:
-    return 1.50
+    return 1.40
   elif personality==log.LongitudinalPersonality.aggressive:
     return 1.20
   else:
@@ -83,56 +83,25 @@ def get_stopped_equivalence_factor(v_lead):
   return (v_lead**2) / (2 * COMFORT_BRAKE)
 
 def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
-  """
-  Calculate dynamic following distance when lead car is moving faster than ego car.
-  Adapts behavior smoothly between aggressive and conservative based on speed differences.
+  v_diff_offset_max = 12  # Max additional offset distance
+  delta_speed = v_lead - v_ego  # Relative speed of lead vs. ego
 
-  Args:
-      v_lead: Lead vehicle velocity (m/s)
-      v_ego: Ego vehicle velocity (m/s)
+  v_diff_offset = np.zeros_like(delta_speed)  # Ensures proper shape
 
-  Returns:
-      distance: Recommended following distance (meters)
-  """
-  delta_speed = v_lead - v_ego  # Relative speed difference
-  v_diff_offset = 0  # Initialize dynamic offset
+  mask = delta_speed > 0  # Only apply logic when lead is pulling away
 
-  if np.all(delta_speed > 0):  # Only apply logic when lead car is moving faster
-    # **Speed Ratio Calculation (0 to 1)**
-    # - Higher values mean a bigger difference between lead & ego speeds.
-    # - Helps scale following distance dynamically.
-    speed_ratio = np.where(v_lead > 0, delta_speed / v_lead, 0)  # Element-wise check
-    speed_ratio = np.clip(speed_ratio, 0, 1)  # Ensure range [0,1]
+  if np.any(mask):
+    # 🔧 **Stronger Low-Speed Acceleration Scaling**
+    scaling_factor = np.interp(v_ego, [0, 1, 3, 5, 9, 11, 22], [2.8, 2.0, 0.95, 0.88, 0.83, 0.83, 0.83])
+    v_diff_offset[mask] = delta_speed[mask] * scaling_factor
+    v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
 
+    # 🔧 **Reduce Ego Speed Scaling Effect at Low Speeds**
+    ego_scaling = np.interp(v_ego, [0, 1, 3, 5, 11, 20], [1.8, 1.7, 1.1, 1.0, 0.95, 0.9])
+    v_diff_offset *= ego_scaling
 
-    #  **Base Dynamic Offset Calculation**
-    # - Multiplier starts at 1.0 (neutral) and increases based on speed ratio.
-    # - Higher multiplier = more aggressive takeoff response.
-    dynamic_multiplier = 1.0 + speed_ratio  # Ranges from 1.0 (normal) to 2.0 (aggressive)
-    v_diff_offset = delta_speed * dynamic_multiplier
-
-    # **Limit Max Offset Based on Ego Speed**
-    # - Ensures ego car doesn't overreact at high speeds.
-    # - Max offset reduces as ego speed increases.
-    speed_factor = np.clip(v_ego / 30.0, 0, 1)  # Normalize ego speed (0-30 m/s range)
-    max_offset = STOP_DISTANCE * (0.3 + 0.2 * (1 - speed_factor))  # Adjust max distance
-    v_diff_offset = np.clip(v_diff_offset, 0, max_offset)
-
-    # **Behavior Adjustment for Speed Differences**
-    # - Increases following distance when the lead car is pulling away fast.
-    # - More aggressive when ego speed is low.
-    speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)  # Adjust from 7.2 to 10 m/s
-    v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
-
-    # **Smooth Response for Comfort**
-    # - Prevents harsh jumps in following distance.
-    # - Lower divisor (e.g., 3.0 instead of 5.0) makes response faster.
-    v_diff_offset *= np.clip(delta_speed / 5.0, 0, 1)
-
-  # **Final Following Distance Calculation**
-  # - Base distance derived from kinematics (braking distance formula).
-  # - Additional dynamic offset is added for smooth adaptation.
-  return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+  stopping_distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+  return stopping_distance
 
 
 def get_safe_obstacle_distance(v_ego, t_follow):
