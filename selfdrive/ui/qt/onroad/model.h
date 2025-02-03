@@ -26,11 +26,6 @@ private:
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height, int width);
   void updatePathGradient(QLinearGradient &bg);
   QColor blendColors(const QColor &start, const QColor &end, float t);
-  void DrawGaugeBackground(QPainter &painter, qreal centerX, qreal centerY, qreal backgroundSize);
-  void DrawGaugeSemicircle(QPainter &painter, qreal centerX, qreal centerY, qreal gaugeSize);
-  QColor DetermineIndicatorColor(float value, float lowThreshold, float midThreshold, const QColor &lowColor, const QColor &midColor, const QColor &highColor);
-  void DrawGaugeArc(QPainter &painter, qreal centerX, qreal centerY, qreal gaugeSize, float value, float maxValue, const QColor &indicatorColor, int startAngle);
-  void DrawGaugeText(QPainter &painter, qreal centerX, qreal centerY, const QString &text);
   void LongFuel(QPainter &p, int height, int width);
   void LateralFuel(QPainter &p, int height, int width);
   bool longitudinal_control = false;
