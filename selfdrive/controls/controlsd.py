@@ -608,7 +608,7 @@ class Controls:
     self.VM.update_params(x, sr)
 
     # Update Torque Params
-    if self.CP.lateralTuning.which() == 'torque':
+    if self.CP.lateralTuning.which() == 'torque' and self.CP.steerControlType != car.CarParams.SteerControlType.angle:
       torque_params = self.sm['liveTorqueParameters']
       if self.sm.all_checks(['liveTorqueParameters']) and (torque_params.useParams or self.live_torque) and not self.torqued_override:
         self.LaC.update_live_torque_params(torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered,
@@ -700,7 +700,7 @@ class Controls:
     recent_steer_pressed = (self.sm.frame - self.last_steering_pressed_frame)*DT_CTRL < 2.0
 
     # Send a "steering required alert" if saturation count has reached the limit
-    if lac_log.active and not recent_steer_pressed and not self.CP.notCar and CS.madsEnabled:
+    if lac_log.active and not recent_steer_pressed and not self.CP.notCar and CS.madsEnabled and self.CP.steerControlType != car.CarParams.SteerControlType.angle:
       if self.CP.lateralTuning.which() == 'torque' and not self.joystick_mode:
         undershooting = abs(lac_log.desiredLateralAccel) / abs(1e-3 + lac_log.actualLateralAccel) > 1.2
         turning = abs(lac_log.desiredLateralAccel) > 1.0
