@@ -89,20 +89,31 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
   if np.all(delta_speed > 0):  # Only when lead car is faster
     speed_ratio = np.where(v_lead > 0, delta_speed / v_lead, 0)
     speed_ratio = np.clip(speed_ratio, 0, 1)
-    # **More aggressive takeoff multiplier**
-    base_multiplier = 1.5 if v_ego < 2.0 else 1.0
+
+    # **Smooth takeoff multiplier (scales based on ego speed)**
+    base_multiplier = np.clip(1.0 + (2.0 - v_ego) / 2.5, 1.0, 1.4)
     dynamic_multiplier = base_multiplier + speed_ratio
+
     v_diff_offset = delta_speed * dynamic_multiplier
-    # **Less restrictive max offset for low speeds**
+
+    # **Soft max offset limit for comfort**
     speed_factor = np.clip(v_ego / 30.0, 0, 1)
-    max_offset = STOP_DISTANCE * (0.5 if v_ego < 2.0 else (0.3 + 0.2 * (1 - speed_factor)))
+    max_offset = STOP_DISTANCE * np.interp(v_ego, [0, 10, 30], [0.5, 0.35, 0.2])  # Scales limit smoothly
     v_diff_offset = np.clip(v_diff_offset, 0, max_offset)
-    # **Remove excessive smoothing at low speeds**
-    if v_ego > 2.0:
-      speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)
-      v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
-      v_diff_offset *= np.clip(delta_speed / 2.0, 0, 1)  # Faster response
+
+    # **Gradual offset response (reduces abrupt changes)**
+    speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)
+    v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
+
+    # **Progressive offset scaling (avoids sudden jumps)**
+    v_diff_offset *= np.clip(delta_speed / (3.5 + speed_ratio), 0, 1)
+
+    # **Final smoothing factor (reduces jerk at mid-high speeds)**
+    smooth_factor = np.interp(v_ego, [0, 5, 30], [1.0, 0.8, 0.5])  # Reduces impact at high speeds
+    v_diff_offset *= smooth_factor
+
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+
 
 
 
