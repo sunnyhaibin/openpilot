@@ -83,46 +83,25 @@ def get_stopped_equivalence_factor(v_lead):
   return (v_lead**2) / (2 * COMFORT_BRAKE)
 
 def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
-  """
-  Calculate dynamic following distance when lead car is moving faster than ego car.
-  Adapts behavior smoothly between aggressive and conservative based on speed differences.
-  Args:
-      v_lead: Lead vehicle velocity (m/s)
-      v_ego: Ego vehicle velocity (m/s)
-  Returns:
-      distance: Recommended following distance (meters)
-  """
-  delta_speed = v_lead - v_ego  # Relative speed difference
+  delta_speed = v_lead - v_ego
   v_diff_offset = 0  # Initialize dynamic offset
-  if np.all(delta_speed > 0):  # Only apply logic when lead car is moving faster
-    # **Speed Ratio Calculation (0 to 1)**
-    # - Higher values mean a bigger difference between lead & ego speeds.
-    # - Helps scale following distance dynamically.
-    speed_ratio = np.where(v_lead > 0, delta_speed / v_lead, 0)  # Element-wise check
-    speed_ratio = np.clip(speed_ratio, 0, 1)  # Ensure range [0,1]
-    #  **Base Dynamic Offset Calculation**
-    # - Multiplier starts at 1.0 (neutral) and increases based on speed ratio.
-    # - Higher multiplier = more aggressive takeoff response.
-    dynamic_multiplier = 1.0 + speed_ratio  # Ranges from 1.0 (normal) to 2.0 (aggressive)
+
+  if np.all(delta_speed > 0):  # Only when lead car is faster
+    speed_ratio = np.where(v_lead > 0, delta_speed / v_lead, 0)
+    speed_ratio = np.clip(speed_ratio, 0, 1)
+    # **More aggressive takeoff multiplier**
+    base_multiplier = 1.5 if v_ego < 2.0 else 1.0
+    dynamic_multiplier = base_multiplier + speed_ratio
     v_diff_offset = delta_speed * dynamic_multiplier
-    # **Limit Max Offset Based on Ego Speed**
-    # - Ensures ego car doesn't overreact at high speeds.
-    # - Max offset reduces as ego speed increases.
-    speed_factor = np.clip(v_ego / 30.0, 0, 1)  # Normalize ego speed (0-30 m/s range)
-    max_offset = STOP_DISTANCE * (0.3 + 0.2 * (1 - speed_factor))  # Adjust max distance
+    # **Less restrictive max offset for low speeds**
+    speed_factor = np.clip(v_ego / 30.0, 0, 1)
+    max_offset = STOP_DISTANCE * (0.5 if v_ego < 2.0 else (0.3 + 0.2 * (1 - speed_factor)))
     v_diff_offset = np.clip(v_diff_offset, 0, max_offset)
-    # **Behavior Adjustment for Speed Differences**
-    # - Increases following distance when the lead car is pulling away fast.
-    # - More aggressive when ego speed is low.
-    speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)  # Adjust from 7.2 to 10 m/s
-    v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
-    # **Smooth Response for Comfort**
-    # - Prevents harsh jumps in following distance.
-    # - Lower divisor (e.g., 3.0 instead of 5.0) makes response faster.
-    v_diff_offset *= np.clip(delta_speed / 5.0, 0, 1)
-  # **Final Following Distance Calculation**
-  # - Base distance derived from kinematics (braking distance formula).
-  # - Additional dynamic offset is added for smooth adaptation.
+    # **Remove excessive smoothing at low speeds**
+    if v_ego > 2.0:
+      speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)
+      v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
+      v_diff_offset *= np.clip(delta_speed / 2.0, 0, 1)  # Faster response
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
 
 
