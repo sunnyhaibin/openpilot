@@ -98,21 +98,22 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
 
     # **Soft max offset limit for comfort**
     speed_factor = np.clip(v_ego / 30.0, 0, 1)
-    max_offset = STOP_DISTANCE * np.interp(v_ego, [0, 10, 30], [0.5, 0.35, 0.2])  # Scales limit smoothly
+    max_offset = STOP_DISTANCE * np.interp(v_ego, [0, 10, 25, 30], [0.5, 0.35, 0.25, 0.2])  # Adjusted transition
     v_diff_offset = np.clip(v_diff_offset, 0, max_offset)
 
     # **Gradual offset response (reduces abrupt changes)**
-    speed_threshold = 7.2 + 2.8 * (1 - speed_ratio)
+    speed_threshold = 7.2 + 2.0 * (1 - speed_ratio)  # Reduced aggression
     v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
 
     # **Progressive offset scaling (avoids sudden jumps)**
     v_diff_offset *= np.clip(delta_speed / (3.5 + speed_ratio), 0, 1)
 
-    # **Final smoothing factor (reduces jerk at mid-high speeds)**
-    smooth_factor = np.interp(v_ego, [0, 5, 30], [1.0, 0.8, 0.5])  # Reduces impact at high speeds
+    # **Final smoothing factor (reduces jerk at mid-speeds)**
+    smooth_factor = np.interp(v_ego, [0, 10, 25, 30], [1.0, 0.7, 0.5, 0.5])  # Improved transition
     v_diff_offset *= smooth_factor
 
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+
 
 
 
