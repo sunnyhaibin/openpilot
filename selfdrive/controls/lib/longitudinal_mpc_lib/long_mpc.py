@@ -90,29 +90,30 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
     speed_ratio = np.where(v_lead > 0, delta_speed / v_lead, 0)
     speed_ratio = np.clip(speed_ratio, 0, 1)
 
-    # **Smooth takeoff multiplier (scales based on ego speed)**
-    base_multiplier = np.clip(1.0 + (2.0 - v_ego) / 2.5, 1.0, 1.4)
+    # **Anticipate smooth takeoff & stopping behavior**
+    base_multiplier = np.clip(1.0 + (2.0 - v_ego) / 3.0, 1.0, 1.3)  # More stable scaling
     dynamic_multiplier = base_multiplier + speed_ratio
 
     v_diff_offset = delta_speed * dynamic_multiplier
 
-    # **Soft max offset limit for comfort**
-    speed_factor = np.clip(v_ego / 30.0, 0, 1)
-    max_offset = STOP_DISTANCE * np.interp(v_ego, [0, 10, 25, 30], [0.5, 0.35, 0.25, 0.2])  # Adjusted transition
+    # **Better max offset scaling for smooth braking**
+    max_offset = STOP_DISTANCE * np.interp(v_ego, [0, 10, 25, 60], [0.4, 0.35, 0.3, 0.25])
     v_diff_offset = np.clip(v_diff_offset, 0, max_offset)
 
-    # **Gradual offset response (reduces abrupt changes)**
-    speed_threshold = 7.2 + 2.0 * (1 - speed_ratio)  # Reduced aggression
+    # **Progressive threshold scaling to reduce sudden space expansion**
+    speed_threshold = np.interp(v_ego, [0, 10, 60], [8.0, 6.5, 4.5])  # Smoothed values
     v_diff_offset *= np.maximum((speed_threshold - v_ego) / speed_threshold, 0)
 
-    # **Progressive offset scaling (avoids sudden jumps)**
-    v_diff_offset *= np.clip(delta_speed / (3.5 + speed_ratio), 0, 1)
+    # **Smoother response scaling (avoids sudden braking)**
+    v_diff_offset *= np.clip(delta_speed / (4.0 + speed_ratio), 0, 1)
 
-    # **Final smoothing factor (reduces jerk at mid-speeds)**
-    smooth_factor = np.interp(v_ego, [0, 10, 25, 30], [1.0, 0.7, 0.5, 0.5])  # Improved transition
+    # **Final smoothing factor for more natural deceleration**
+    smooth_factor = np.interp(v_ego, [0, 10, 25, 60], [1.0, 0.75, 0.6, 0.5])  # Reduces reaction at high speeds
     v_diff_offset *= smooth_factor
 
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+
+
 
 
 
