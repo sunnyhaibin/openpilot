@@ -82,7 +82,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
 def get_stopped_equivalence_factor(v_lead):
   return (v_lead**2) / (2 * COMFORT_BRAKE)
 
-def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
+def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego, time_to_max_brake=0.3):
     v_diff_offset = np.zeros_like(v_lead)
     delta_speed = v_lead - v_ego
 
@@ -98,9 +98,16 @@ def get_stopped_equivalence_factor_krkeegen(v_lead, v_ego):
         fast_takeoff_condition = (v_ego < 10) & (delta_speed > 2)  # Array-wise condition
         v_diff_offset = np.where(fast_takeoff_condition, np.clip(v_diff_offset * 1.5, 0, STOP_DISTANCE / 2), v_diff_offset)
 
+    # softer initial braking
+    initial_brake_factor = np.clip(v_ego / 30, 0, 1)  # Soft brake factor for the first 0.3 seconds
+    smooth_initial_brake = np.minimum(1, initial_brake_factor / time_to_max_brake)
+    
     # Calculate stopping distance
     distance = (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
+    distance *= smooth_initial_brake  # Apply initial smooth brake force
+
     return distance
+
 
 
 def get_safe_obstacle_distance(v_ego, t_follow):
